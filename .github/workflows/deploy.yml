@@ -7,24 +7,29 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-lastest
+    runs-on: ubuntu-latest
 
     steps:
-      - name: checkout src
+      - name: Checkout source
         uses: actions/checkout@v3
 
-      - name: nodejs setup 
-        use: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
       
-      - name: npm i
-        run: npm i
+      - name: Install dependencies
+        run: npm install
 
-      - name: npm build
-        run: npm run build-dist
+      - name: Build project
+        run: npm run build
 
-      - name: deloy github page
-        run: npm run deloy
+      - name: git identity
+        run: |
+          git config --global user.name "cjjjjjk"
+          git config --global user.email "hai.hv04@gmail.com"
+
+      - name: Deploy to GitHub Pages
+        run: npm run deploy
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
