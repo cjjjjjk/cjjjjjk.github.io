@@ -5,7 +5,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="greetings">
+  <div class="greeting">
     <h1 class="green">{{ msg }}</h1>
   </div>
 </template>
@@ -17,7 +17,7 @@ h1 {
 
 h1:hover {
   color: black;
-  transition:all;
+  transition: all;
   transition-duration: 1s;
 }
 </style>

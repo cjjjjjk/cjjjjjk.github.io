@@ -1,16 +1,28 @@
 @import './base.css';
 @import "tailwindcss";
 
+/* body {
+  background-color: blueviolet;
+} */
+
 #app {
+  height: 100%;
+  min-height: 100vh;
+
   margin: 0 auto;
-  padding: 2rem;
-  padding-top: 10rem;
   font-weight: normal;
+
+  padding-top: 10rem;
 
   display: flex;
   flex-direction: row;
   justify-content: center;
-  align-items: center;
+  align-items: start;
+
+  background-image: url("./images/background.jpg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 a,

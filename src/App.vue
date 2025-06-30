@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
+
 import HelloWorld from './components/HelloWorld.vue'
+import TheTaskbar from './components/taskbar/TheTaskbar.vue';
 </script>
 
 <template>
@@ -15,6 +17,7 @@ import HelloWorld from './components/HelloWorld.vue'
     </div>
   </header>
   <!-- <RouterView /> -->
+  <TheTaskbar />
 </template>
 
 <style scoped>
