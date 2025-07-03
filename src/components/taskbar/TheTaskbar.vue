@@ -1,6 +1,6 @@
 <template>
   <div
-    class="taskbar-container fixed left-3 bottom-3 h-12 px-3 grid place-items-center border border-solid border-gray-50
+    class="taskbar-container fixed bottom-4 h-12 px-3 grid place-items-center border border-solid border-gray-50
            backdrop-blur-sm bg-white/10 rounded-xl shadow-sm"
   >
     <div class="flex flex-row gap-3 items-center">
@@ -14,20 +14,11 @@
 </template>
 
 
-<script>
+<script setup>
 import TaskbarItem from './TaskbarItem.vue';
 
-export default {
-  name: 'TheTaskbar',
-  components: {
-    TaskbarItem
-  },
-  data() {
-    return {
-      icons: ['🫤', '😕', '😁', '🤔', '😎', '😡']
-    };
-  }
-};
+const icons = ['🫤', '😕', '😁', '🤔', '😎', '😡'] 
+
 </script>
 
 <style scoped>

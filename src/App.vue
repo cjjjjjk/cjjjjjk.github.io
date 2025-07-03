@@ -7,7 +7,7 @@ import TheTaskbar from './components/taskbar/TheTaskbar.vue';
 
 <template>
   <header class="header">
-    <img alt="Vue logo" class="logo" src="@/assets/logo-192x192.png" width="125" height="125" />
+    <img alt="Vue logo" class="logo rounded-4xl" src="@/assets/logo-192x192.png" width="125" height="125" />
     <div class="wrapper">
       <HelloWorld msg="Hi there 👋" />
       <!-- <nav>
