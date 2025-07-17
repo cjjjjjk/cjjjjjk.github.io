@@ -6,7 +6,7 @@
     <span class="blink">:</span>
     <span class="bg-white/10 hover:bg-gray/5 px-1.5 rounded-sm text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]">{{ getTimeObject().min }}</span>
     <span 
-      class="time-format text-sm text-gray-200 bg-white/5 flex p-0.5 self-start rounded-sm"
+      class="time-format text-sm hover:bg-gray/5 text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.6)] flex self-start rounded-sm"
       v-if="getTimeObject().hour12Format">{{ getTimeObject().hour12Format }}</span>
 </div>
 </template>

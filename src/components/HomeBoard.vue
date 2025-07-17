@@ -15,20 +15,11 @@ const props = defineProps<{
 <template>
   <div class="greeting ms-3 ps-3">
     <TimeBox />
-    <h1 class="green select-none">{{ msg }}</h1>
+    <h1 class="select-none bg-white/10 rounded-sm p-1 text-white font-bold drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]">{{ msg }}</h1>
   </div>
 </template>
 
 <style scoped>
-h1 {
-  font-weight: bolder;
-}
-
-h1:hover {
-  color: black;
-  transition: all;
-  transition-duration: 1s;
-}
 
 .greeting {
   aspect-ratio: calc(10/7);

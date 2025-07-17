@@ -5,6 +5,7 @@
   >
     <div class="flex flex-row gap-3 justify-center items-center">
       <TaskbarItem 
+        @icon-click="getEmits"
         v-for="(title, index) in icons"
         :key="index"
         :title="title" 
@@ -14,11 +15,14 @@
 </template>
 
 
-<script setup>
+<script setup lang="ts">
 import TaskbarItem from './TaskbarItem.vue';
 
-const icons = ['🫤', '😕', '😁', '🤔', '😎', '😡'] 
+const icons = ['🫤', '😕', '😁', '😡'] 
 
+const getEmits = (title: string)=> {
+  console.log(title)
+}
 </script>
 
 <style scoped>
