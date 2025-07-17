@@ -2,11 +2,11 @@
 <div class="timebox-container flex flex-row items-center gap-0.5 text-2xl font-bold text-white hover:cursor-pointer h-12 py-0.5"
     @click="toggleHourFormat" 
 >
-    <span class="bg-white/10 hover:bg-gray/5 px-1.5 rounded-sm text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]">{{ getTimeObject().hour }}</span>
+    <span class="bg-white/10 text-5xl hover:bg-gray/5 px-1.5 rounded-sm text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]">{{ getTimeObject().hour }}</span>
     <span class="blink">:</span>
-    <span class="bg-white/10 hover:bg-gray/5 px-1.5 rounded-sm text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]">{{ getTimeObject().min }}</span>
+    <span class="bg-white/10 text-5xl hover:bg-gray/5 px-1.5 rounded-sm text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]">{{ getTimeObject().min }}</span>
     <span 
-      class="time-format text-sm hover:bg-gray/5 text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.6)] flex self-start rounded-sm"
+      class="time-format text-xl hover:bg-gray/5 text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.6)] flex self-start rounded-sm"
       v-if="getTimeObject().hour12Format">{{ getTimeObject().hour12Format }}</span>
 </div>
 </template>

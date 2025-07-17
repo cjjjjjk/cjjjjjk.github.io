@@ -11,7 +11,7 @@ const logoIconStore = useLogoIconStore()
   <IconHeaderOptions  class="fixed top-5 right-5 opacity-40 hover:opacity-100 hover:cursor-pointer transition-opacity duration-300"/>
   <main class="flex flex-col justify-center items-center">
     <header class="header grid grid-cols-2">
-    <div class="logo-bg relative grid grid-cols-1 items-center">
+    <div class="logo-bg relative grid grid-cols-1 items-center justify-center">
       <Transition  name="fade-icon" mode="out-in">
         <span
           :key="logoIconStore.getIcon ?? '🫤'"
@@ -40,8 +40,8 @@ const logoIconStore = useLogoIconStore()
   align-items: center;
 }
 .logo-bg {
-  width: 125px;
-  height: 125px;
+  width: 10rem;
+  height: 10rem;
   background-color: #124;
   /* background-image: url('@/assets/logo-192x192-empty.png'); */
   /* background-size: cover;
@@ -50,7 +50,7 @@ const logoIconStore = useLogoIconStore()
 }
 
 .text-logo {
-  font-size: 4.75rem;
+  font-size: 6.25rem;
 }
 
 /*[grok ai] Enhanced Logo Transition Animation with Vibration Effect */

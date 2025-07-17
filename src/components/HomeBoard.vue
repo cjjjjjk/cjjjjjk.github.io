@@ -13,9 +13,9 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div class="greeting ms-3 ps-3">
+  <div class="greeting ms-3 flex flex-col ps-3 gap-3">
     <TimeBox />
-    <h1 class="select-none bg-white/10 rounded-sm p-1 text-white font-bold drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]">{{ msg }}</h1>
+    <h1 class="select-none bg-white/5 rounded-sm p-3 text-white text-3xl font-bold drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]">{{ msg }}</h1>
   </div>
 </template>
 
@@ -23,12 +23,5 @@ const props = defineProps<{
 
 .greeting {
   aspect-ratio: calc(10/7);
-}
-
-.green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-  padding: 3px;
 }
 </style>

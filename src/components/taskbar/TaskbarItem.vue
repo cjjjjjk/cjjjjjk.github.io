@@ -1,7 +1,7 @@
 <template>
   <div
     @click="handleClickIcon" 
-    class="bg-transparent text-2xl select-none hover:cursor-pointer hover:text-3xl transition-all duration-200 icon-font">
+    class="bg-transparent text-5xl select-none hover:cursor-pointer hover:text-4xl transition-all duration-200 icon-font">
     {{ title }}
   </div>
 </template>
