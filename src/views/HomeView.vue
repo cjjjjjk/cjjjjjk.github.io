@@ -3,24 +3,34 @@ import HomeBoard from '@/components/HomeBoard.vue';
 import IconHeaderOptions from '@/components/icons/IconHeaderOptions.vue';
 import TheTaskbar from '@/components/taskbar/TheTaskbar.vue';
 import { useLogoIconStore } from '@/stores/logo';
+import { UseMenuHandlerStore } from '@/stores/menu-handler';
+import MenuView from './MenuView.vue';
 
 const logoIconStore = useLogoIconStore()
+const menuHandleStore = UseMenuHandlerStore()
+
 </script>
 
 <template>
-  <IconHeaderOptions  class="fixed top-5 right-5 opacity-40 hover:opacity-100 hover:cursor-pointer transition-opacity duration-300"/>
-  <main class="flex flex-col justify-center items-center">
+  <IconHeaderOptions  
+    class="fixed top-10 right-10 opacity-40 hover:opacity-100 hover:cursor-pointer transition-opacity duration-300"
+    v-if="!menuHandleStore.isOpenMenuStatus"
+    @click="menuHandleStore.toggleMenuShow()"
+    />
+  <main class="flex flex-col justify-center items-center z-0 mt-40 self-start"
+    v-if="!menuHandleStore.isOpenMenuStatus"
+  >
     <header class="header grid grid-cols-2">
     <div class="logo-bg relative grid grid-cols-1 items-center justify-center">
       <Transition  name="fade-icon" mode="out-in">
         <span
-          :key="logoIconStore.getIcon ?? '🫤'"
-          class="text-logo text-center flex justify-center">{{ logoIconStore.getIcon }}</span>
+          :key="logoIconStore.renderKey"
+          class="text-logo text-center flex justify-center select-none">{{ logoIconStore.getIcon }}</span>
       </Transition>
     </div>
 
       <div class="wrapper">
-        <HomeBoard msg="Hi there 👋" />
+        <HomeBoard msg="Hi there" />
         <!-- <nav>
           <RouterLink to="/">Home</RouterLink>
           <RouterLink to="/about">About</RouterLink>
@@ -30,6 +40,9 @@ const logoIconStore = useLogoIconStore()
     <!-- <RouterView /> -->
     <TheTaskbar/>
   </main>
+  <MenuView 
+    v-if="menuHandleStore.isOpenMenuStatus"
+  />
 </template>
 
 <style scoped>
