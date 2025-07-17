@@ -13,7 +13,7 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div class="greeting">
+  <div class="greeting ms-3 ps-3">
     <TimeBox />
     <h1 class="green select-none">{{ msg }}</h1>
   </div>
@@ -31,7 +31,6 @@ h1:hover {
 }
 
 .greeting {
-  width: 10rem;
   aspect-ratio: calc(10/7);
 }
 
