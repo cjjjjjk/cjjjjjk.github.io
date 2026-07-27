@@ -269,6 +269,9 @@ interface Buddy {
   color: string
   factors: number[]
   phase: number
+  mood: string
+  moodTimer: number
+  blink: number
 }
 interface Particle {
   x: number
@@ -287,6 +290,7 @@ const buddyList: Buddy[] = []
 const particles: Particle[] = []
 const trail: { x: number; y: number }[] = []
 const CONFETTI_EMOJI = ['✦', '★', '❤', '✿', '●', '▲', '♦', '🎉', '🍬', '⚡']
+const MOODS = ['happy', 'grin', 'surprised', 'wink', 'sleepy', 'angry', 'love', 'dizzy', 'cool']
 
 function initBuddies(w: number, h: number) {
   buddyList.length = 0
@@ -304,6 +308,9 @@ function initBuddies(w: number, h: number) {
       color: palette[i % palette.length],
       factors,
       phase: rand(0, TAU),
+      mood: pick(MOODS),
+      moodTimer: Math.floor(rand(120, 420)),
+      blink: 0,
     })
   }
 }
@@ -354,41 +361,176 @@ function drawBuddy(ctx: CanvasRenderingContext2D, b: Buddy) {
   ctx.strokeStyle = '#171123'
   ctx.stroke()
 
-  // googly eyes — WHITE fill + black pupil that looks at the cursor
+  // ------- face: eyes vary by mood -------
   const er = b.r * 0.3
   const ey = -b.r * 0.12
-  for (const ex of [-b.r * 0.34, b.r * 0.34]) {
-    ctx.beginPath()
-    ctx.ellipse(ex, ey, er * 0.9, er, 0, 0, TAU)
-    ctx.fillStyle = '#fff'
-    ctx.fill()
-    ctx.lineWidth = 3.5
+  const exL = -b.r * 0.34
+  const exR = b.r * 0.34
+  const mood = b.mood
+
+  if (mood === 'angry') {
+    // angry eyebrows
     ctx.strokeStyle = '#171123'
-    ctx.stroke()
-    const gx = b.x + ex
-    const gy = b.y + ey
-    const a = Math.atan2(mouse.y - gy, mouse.x - gx)
-    const md = Math.min(er * 0.42, 6)
-    const px = ex + Math.cos(a) * md
-    const py = ey + Math.sin(a) * md
+    ctx.lineWidth = 4
+    ctx.lineCap = 'round'
     ctx.beginPath()
-    ctx.arc(px, py, er * 0.44, 0, TAU)
+    ctx.moveTo(exL - er * 0.9, ey - er * 1.25)
+    ctx.lineTo(exL + er * 0.6, ey - er * 0.55)
+    ctx.moveTo(exR + er * 0.9, ey - er * 1.25)
+    ctx.lineTo(exR - er * 0.6, ey - er * 0.55)
+    ctx.stroke()
+  }
+
+  if (b.blink > 0 || mood === 'happy') {
+    // ^ ^ happy / blinking curves
+    happyEye(ctx, exL, ey, er)
+    happyEye(ctx, exR, ey, er)
+  } else if (mood === 'love') {
+    heart(ctx, exL, ey, er * 1.5)
+    heart(ctx, exR, ey, er * 1.5)
+  } else if (mood === 'sleepy') {
+    ctx.strokeStyle = '#171123'
+    ctx.lineWidth = 3.5
+    ctx.lineCap = 'round'
+    for (const ex of [exL, exR]) {
+      ctx.beginPath()
+      ctx.moveTo(ex - er * 0.9, ey)
+      ctx.quadraticCurveTo(ex, ey + er * 0.55, ex + er * 0.9, ey)
+      ctx.stroke()
+    }
+  } else if (mood === 'dizzy') {
+    ctx.strokeStyle = '#171123'
+    ctx.lineWidth = 3.5
+    ctx.lineCap = 'round'
+    for (const ex of [exL, exR]) {
+      ctx.beginPath()
+      ctx.moveTo(ex - er * 0.7, ey - er * 0.7)
+      ctx.lineTo(ex + er * 0.7, ey + er * 0.7)
+      ctx.moveTo(ex + er * 0.7, ey - er * 0.7)
+      ctx.lineTo(ex - er * 0.7, ey + er * 0.7)
+      ctx.stroke()
+    }
+  } else if (mood === 'cool') {
+    // sunglasses
+    ctx.fillStyle = '#171123'
+    ctx.beginPath()
+    ctx.ellipse(exL, ey, er, er * 0.78, 0, 0, TAU)
+    ctx.ellipse(exR, ey, er, er * 0.78, 0, 0, TAU)
+    ctx.fill()
+    ctx.lineWidth = 3
+    ctx.strokeStyle = '#171123'
+    ctx.beginPath()
+    ctx.moveTo(exL + er, ey)
+    ctx.lineTo(exR - er, ey)
+    ctx.stroke()
+  } else if (mood === 'surprised') {
+    eyeWhite(ctx, exL, ey, er, er * 1.15)
+    eyeWhite(ctx, exR, ey, er, er * 1.15)
+    pupil(ctx, b, exL, ey, er, 0.3)
+    pupil(ctx, b, exR, ey, er, 0.3)
+  } else if (mood === 'wink') {
+    happyEye(ctx, exL, ey, er)
+    eyeWhite(ctx, exR, ey, er * 0.9, er)
+    pupil(ctx, b, exR, ey, er, 0.44)
+  } else {
+    // grin / default: full googly eyes tracking the cursor
+    eyeWhite(ctx, exL, ey, er * 0.9, er)
+    eyeWhite(ctx, exR, ey, er * 0.9, er)
+    pupil(ctx, b, exL, ey, er, 0.44)
+    pupil(ctx, b, exR, ey, er, 0.44)
+  }
+
+  // ------- mouth varies by mood -------
+  ctx.strokeStyle = '#171123'
+  ctx.lineWidth = 3.5
+  ctx.lineCap = 'round'
+  const my = b.r * 0.16
+  if (mood === 'surprised') {
+    ctx.beginPath()
+    ctx.arc(0, b.r * 0.26, b.r * 0.16, 0, TAU)
+    ctx.fillStyle = '#171123'
+    ctx.fill()
+  } else if (mood === 'angry') {
+    ctx.beginPath()
+    ctx.arc(0, b.r * 0.44, b.r * 0.28, 1.15 * Math.PI, 1.85 * Math.PI)
+    ctx.stroke()
+  } else if (mood === 'sleepy') {
+    ctx.beginPath()
+    ctx.arc(b.r * 0.02, b.r * 0.24, b.r * 0.1, 0, TAU)
+    ctx.stroke()
+  } else if (mood === 'dizzy') {
+    ctx.beginPath()
+    ctx.moveTo(-b.r * 0.26, my + b.r * 0.08)
+    ctx.quadraticCurveTo(-b.r * 0.13, my - b.r * 0.06, 0, my + b.r * 0.08)
+    ctx.quadraticCurveTo(b.r * 0.13, my + b.r * 0.22, b.r * 0.26, my + b.r * 0.06)
+    ctx.stroke()
+  } else if (mood === 'grin' || mood === 'love' || mood === 'happy') {
+    // big open grin with a tongue
+    ctx.beginPath()
+    ctx.arc(0, my, b.r * 0.32, 0.08 * Math.PI, 0.92 * Math.PI)
+    ctx.closePath()
     ctx.fillStyle = '#171123'
     ctx.fill()
     ctx.beginPath()
-    ctx.arc(px - er * 0.15, py - er * 0.15, er * 0.12, 0, TAU)
-    ctx.fillStyle = '#fff'
+    ctx.fillStyle = '#ff6b8a'
+    ctx.arc(0, my + b.r * 0.22, b.r * 0.13, 0, Math.PI)
     ctx.fill()
+  } else {
+    ctx.beginPath()
+    ctx.arc(0, my, b.r * 0.28, 0.15 * Math.PI, 0.85 * Math.PI)
+    ctx.stroke()
   }
 
-  // little smile
+  ctx.restore()
+}
+
+/* face part helpers */
+function eyeWhite(ctx: CanvasRenderingContext2D, ex: number, ey: number, ew: number, eh: number) {
+  ctx.beginPath()
+  ctx.ellipse(ex, ey, ew, eh, 0, 0, TAU)
+  ctx.fillStyle = '#fff'
+  ctx.fill()
+  ctx.lineWidth = 3.5
+  ctx.strokeStyle = '#171123'
+  ctx.stroke()
+}
+function pupil(ctx: CanvasRenderingContext2D, b: Buddy, ex: number, ey: number, er: number, k: number) {
+  const a = Math.atan2(mouse.y - (b.y + ey), mouse.x - (b.x + ex))
+  const md = Math.min(er * 0.42, 6)
+  const px = ex + Math.cos(a) * md
+  const py = ey + Math.sin(a) * md
+  ctx.beginPath()
+  ctx.arc(px, py, er * k, 0, TAU)
+  ctx.fillStyle = '#171123'
+  ctx.fill()
+  ctx.beginPath()
+  ctx.arc(px - er * 0.15, py - er * 0.15, er * 0.13, 0, TAU)
+  ctx.fillStyle = '#fff'
+  ctx.fill()
+}
+function happyEye(ctx: CanvasRenderingContext2D, ex: number, ey: number, er: number) {
   ctx.beginPath()
   ctx.lineWidth = 3.5
   ctx.strokeStyle = '#171123'
   ctx.lineCap = 'round'
-  ctx.arc(0, b.r * 0.16, b.r * 0.28, 0.15 * Math.PI, 0.85 * Math.PI)
+  ctx.moveTo(ex - er * 0.9, ey + er * 0.25)
+  ctx.quadraticCurveTo(ex, ey - er * 0.7, ex + er * 0.9, ey + er * 0.25)
   ctx.stroke()
-
+}
+function heart(ctx: CanvasRenderingContext2D, x: number, y: number, s: number) {
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.scale(s, s)
+  ctx.beginPath()
+  ctx.moveTo(0, 0.28)
+  ctx.bezierCurveTo(-0.5, -0.32, -1.05, 0.22, 0, 0.92)
+  ctx.bezierCurveTo(1.05, 0.22, 0.5, -0.32, 0, 0.28)
+  ctx.closePath()
+  ctx.fillStyle = '#ff4d6d'
+  ctx.fill()
+  ctx.lineWidth = 0.12
+  ctx.strokeStyle = '#171123'
+  ctx.stroke()
   ctx.restore()
 }
 
@@ -452,6 +594,13 @@ function loop() {
       b.vx += rand(-0.5, 0.5)
       b.vy += rand(-0.5, 0.5)
     }
+    // emote: switch moods now and then, blink randomly
+    if (--b.moodTimer <= 0) {
+      b.mood = pick(MOODS)
+      b.moodTimer = Math.floor(rand(140, 460))
+    }
+    if (b.blink > 0) b.blink--
+    else if (Math.random() < 0.006) b.blink = 8
     drawBuddy(bctx, b)
   }
 
