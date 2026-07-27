@@ -1,59 +1,380 @@
 @import './base.css';
-@import "tailwindcss";
 
+/* ======================================================================
+   ✦ THE CHAOS ZONE — global stage ✦
+   no grid. no system. only vibes.
+   ====================================================================== */
 
-
-/* body {
-  background-color: blueviolet;
-} */
-
-.noto-color-emoji-regular {
-  font-family: "Noto Color Emoji", sans-serif;
-  font-weight: 400;
-  font-style: normal;
-}
-
-.icon-font {
-  font-family: "Noto Color Emoji", sans-serif;
-}
-
-
-/*[grok ai] background animation*/
 #app {
-  height: 100%;
-  min-height: 100vh;
-
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-
-  background-image: url("./images/background.jpg");
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  animation: subtleMove 7s ease-in-out infinite;
+  position: fixed;
+  inset: 0;
   overflow: hidden;
+  isolation: isolate;
 }
 
-@keyframes subtleMove {
-  0% {
-    background-position: 50% 50%;
-  }
+/* the living, breathing background */
+.stage {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 20%, var(--gold) 0%, transparent 35%),
+    radial-gradient(circle at 85% 25%, var(--sky) 0%, transparent 40%),
+    radial-gradient(circle at 75% 85%, var(--pink) 0%, transparent 40%),
+    radial-gradient(circle at 20% 80%, var(--lime) 0%, transparent 38%),
+    var(--paper);
+  animation: hue 18s linear infinite;
+}
 
-  25% {
-    background-position: 51% 49%;
+@keyframes hue {
+  to {
+    filter: hue-rotate(360deg);
   }
+}
 
-  50% {
-    background-position: 50% 50%;
+/* faint doodle grid, wobbling like it's drawn by hand */
+.stage::before {
+  content: '';
+  position: absolute;
+  inset: -40px;
+  background-image:
+    linear-gradient(var(--ink) 2px, transparent 2px),
+    linear-gradient(90deg, var(--ink) 2px, transparent 2px);
+  background-size: 64px 64px;
+  opacity: 0.06;
+  animation: driftgrid 12s ease-in-out infinite alternate;
+}
+
+@keyframes driftgrid {
+  from {
+    transform: translate(0, 0) rotate(-0.6deg);
   }
-
-  75% {
-    background-position: 49% 51%;
+  to {
+    transform: translate(24px, 18px) rotate(0.6deg);
   }
+}
 
+/* ---------- canvases ---------- */
+.buddies,
+.fx {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.buddies {
+  z-index: 1;
+}
+.fx {
+  z-index: 90;
+  pointer-events: none;
+}
+
+/* ---------- marquees ---------- */
+.marquee {
+  position: absolute;
+  left: -10%;
+  width: 120%;
+  white-space: nowrap;
+  font-family: var(--font-shout);
+  font-size: clamp(1.6rem, 4vw, 3rem);
+  letter-spacing: 2px;
+  z-index: 5;
+  pointer-events: none;
+  text-shadow: 3px 3px 0 var(--ink);
+  user-select: none;
+}
+.marquee span {
+  display: inline-block;
+  padding-right: 1ch;
+}
+.marquee--top {
+  top: 14px;
+  transform: rotate(-2deg);
+  color: var(--pink);
+  animation: slideL 22s linear infinite;
+}
+.marquee--bottom {
+  bottom: 14px;
+  transform: rotate(2deg);
+  color: var(--sky);
+  animation: slideR 26s linear infinite;
+}
+@keyframes slideL {
+  to {
+    transform: translateX(-50%) rotate(-2deg);
+  }
+}
+@keyframes slideR {
+  from {
+    transform: translateX(-50%) rotate(2deg);
+  }
+  to {
+    transform: translateX(0) rotate(2deg);
+  }
+}
+
+/* ---------- hero blob in the middle ---------- */
+.hero {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  text-align: center;
+  pointer-events: none;
+}
+
+.title {
+  font-family: var(--font-shout);
+  font-size: clamp(3.5rem, 15vw, 11rem);
+  line-height: 0.86;
+  letter-spacing: 3px;
+  color: var(--ink);
+}
+.title span {
+  display: inline-block;
+  animation: jelly 2.4s ease-in-out infinite;
+  text-shadow: 4px 4px 0 #fff, 8px 8px 0 var(--ink);
+}
+.title span:nth-child(3n) {
+  color: var(--pink);
+}
+.title span:nth-child(3n + 1) {
+  color: var(--grape);
+}
+.title span:nth-child(3n + 2) {
+  color: var(--tomato);
+}
+@keyframes jelly {
+  0%,
   100% {
-    background-position: 50% 50%;
+    transform: translateY(0) rotate(-3deg) scale(1);
+  }
+  50% {
+    transform: translateY(-16px) rotate(3deg) scale(1.08);
+  }
+}
+
+.subtitle {
+  margin-top: 0.4rem;
+  font-family: var(--font-round);
+  font-weight: 800;
+  font-size: clamp(1rem, 3.2vw, 1.9rem);
+  color: var(--ink);
+  background: var(--gold);
+  display: inline-block;
+  padding: 0.15em 0.7em;
+  border: 4px solid var(--ink);
+  border-radius: 40px 12px 40px 12px;
+  transform: rotate(-1.5deg);
+  box-shadow: 6px 6px 0 var(--ink);
+  animation: nod 3.5s ease-in-out infinite;
+}
+@keyframes nod {
+  0%,
+  100% {
+    transform: rotate(-1.5deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+
+/* eyes that follow the pointer */
+.eyes {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin: 0 auto 10px;
+  width: max-content;
+}
+.eye {
+  width: clamp(46px, 9vw, 78px);
+  height: clamp(46px, 9vw, 78px);
+  background: #fff;
+  border: 5px solid var(--ink);
+  border-radius: 50%;
+  position: relative;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.pupil {
+  position: absolute;
+  width: 42%;
+  height: 42%;
+  background: var(--ink);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: transform 0.05s linear;
+}
+
+/* ---------- stickers (draggable) ---------- */
+.sticker {
+  position: absolute;
+  z-index: 20;
+  font-family: var(--font-round);
+  font-weight: 800;
+  font-size: clamp(0.85rem, 2.4vw, 1.35rem);
+  padding: 0.5em 0.85em;
+  border: 4px solid var(--ink);
+  color: var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  max-width: 44vw;
+  transition: box-shadow 0.12s ease;
+  animation: floaty 6s ease-in-out infinite;
+}
+.sticker:active {
+  cursor: grabbing;
+}
+.sticker.grabbed {
+  box-shadow: 12px 12px 0 var(--ink);
+  z-index: 80;
+  animation: none;
+}
+@keyframes floaty {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -10px;
+  }
+}
+
+/* ---------- runaway button ---------- */
+.runaway {
+  position: absolute;
+  z-index: 60;
+  font-family: var(--font-shout);
+  font-size: clamp(1.2rem, 3vw, 2rem);
+  letter-spacing: 2px;
+  color: #fff;
+  background: var(--tomato);
+  border: 5px solid var(--ink);
+  border-radius: 50px;
+  padding: 0.5em 1.3em;
+  box-shadow: 6px 6px 0 var(--ink);
+  cursor: none;
+  transition:
+    left 0.35s cubic-bezier(0.68, -0.6, 0.32, 1.6),
+    top 0.35s cubic-bezier(0.68, -0.6, 0.32, 1.6),
+    background 0.2s;
+  transform: translate(-50%, -50%);
+}
+.runaway:hover {
+  background: var(--grape);
+}
+
+/* ---------- chaos meter (top-right HUD) ---------- */
+.meter {
+  position: absolute;
+  top: 70px;
+  right: 18px;
+  z-index: 40;
+  font-family: var(--font-round);
+  font-weight: 800;
+  color: var(--ink);
+  background: #fff;
+  border: 4px solid var(--ink);
+  border-radius: 18px 6px 18px 6px;
+  padding: 8px 12px;
+  box-shadow: 5px 5px 0 var(--ink);
+  transform: rotate(3deg);
+  text-align: center;
+  min-width: 132px;
+  pointer-events: none;
+}
+.meter b {
+  display: block;
+  font-family: var(--font-shout);
+  font-size: 1.9rem;
+  letter-spacing: 1px;
+  line-height: 1;
+  color: var(--pink);
+}
+.meter small {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.6;
+}
+.meter .bar {
+  height: 10px;
+  margin-top: 6px;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  overflow: hidden;
+  background: #ffe9f2;
+}
+.meter .bar > i {
+  display: block;
+  height: 100%;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--pink) 0 8px,
+    var(--grape) 8px 16px
+  );
+  transition: width 0.3s ease;
+}
+
+/* ---------- helper hint ---------- */
+.hint {
+  position: absolute;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-1deg);
+  z-index: 40;
+  font-family: var(--font-round);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: #ffffffcc;
+  border: 3px dashed var(--ink);
+  border-radius: 30px;
+  padding: 5px 16px;
+  pointer-events: none;
+  animation: nod 4s ease-in-out infinite;
+}
+
+/* ---------- custom cursor blob ---------- */
+.cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  z-index: 999;
+  pointer-events: none;
+  font-size: 30px;
+  line-height: 34px;
+  text-align: center;
+  will-change: transform;
+  transition: transform 0.08s ease;
+}
+.cursor.poke {
+  transform: scale(1.6) rotate(20deg);
+}
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .cursor {
+    display: none;
+  }
+}
+
+/* ---------- floating doodle shapes ---------- */
+.doodle {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.9;
+  animation: spinny linear infinite;
+}
+@keyframes spinny {
+  to {
+    transform: rotate(360deg);
   }
 }
