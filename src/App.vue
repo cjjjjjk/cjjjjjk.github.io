@@ -21,19 +21,73 @@ const SUBS = [
 ]
 const subtitle = ref(SUBS[0])
 
-const MARQUEE_TOP =
-  '✦ welcome to the chaos ✦ everything wiggles ✦ nothing is aligned ✦ ' +
-  'drag the stickers ✦ chase the button ✦ remix the whole vibe ✦ '
-const MARQUEE_BOTTOM =
-  '★ made with too much coffee ★ no framework was harmed ★ ' +
-  'click anywhere for confetti ★ summon a storm ★ vibes only ★ '
-
 const palette = ['#ff5ea3', '#b8ff4f', '#4fd2ff', '#ffd23f', '#9b5de5', '#ff6b3d', '#3ddc97']
 function rand(a: number, b: number) {
   return a + Math.random() * (b - a)
 }
 function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
+}
+
+/* ---------- marquees: real GitHub followers, gibberish while loading ---------- */
+const GITHUB_PROXY = 'https://cjjjjj-proxy.hai-hv04.workers.dev'
+const USERNAME = 'cjjjjjk'
+const marqueeTop = ref('')
+const marqueeBottom = ref('')
+
+const GIB_CHARS = '!@#$%^&*()_+{}[]<>?/|~=≠…¿¡§€£'
+const FILLERS = ['HUST', 'cjjjjjk', 'SOICT', '&*(*!#', 'hello world', '404 not found', 'chaos!!', 'wow', '(╯°□°)╯']
+function gib(min = 3, max = 9) {
+  let s = ''
+  const n = Math.floor(rand(min, max))
+  for (let i = 0; i < n; i++) s += GIB_CHARS[Math.floor(Math.random() * GIB_CHARS.length)]
+  return s
+}
+function gibberishLine() {
+  const parts: string[] = []
+  for (let i = 0; i < 16; i++) parts.push(gib())
+  return parts.join('   ')
+}
+function buildMarquee(logins: string[]): string {
+  const pool = logins.length ? logins : ['ghost', 'nobody', 'you?']
+  const tokens: string[] = []
+  let i = 0
+  while (tokens.length < 24) {
+    tokens.push('@' + pool[i % pool.length])
+    if (Math.random() < 0.7) tokens.push(Math.random() < 0.5 ? pick(FILLERS) : gib())
+    i++
+  }
+  return tokens.join('  ✦  ')
+}
+let scrambleTimer = 0
+function startScramble() {
+  marqueeTop.value = gibberishLine()
+  marqueeBottom.value = gibberishLine()
+  scrambleTimer = window.setInterval(() => {
+    marqueeTop.value = gibberishLine()
+    marqueeBottom.value = gibberishLine()
+  }, 100)
+}
+function stopScramble() {
+  if (scrambleTimer) {
+    window.clearInterval(scrambleTimer)
+    scrambleTimer = 0
+  }
+}
+async function loadFollowers() {
+  try {
+    const res = await fetch(`${GITHUB_PROXY}/users/${USERNAME}/followers?per_page=100`)
+    if (!res.ok) throw new Error(String(res.status))
+    const data = (await res.json()) as Array<{ login: string }>
+    const logins = data.map((d) => d.login).filter(Boolean)
+    stopScramble()
+    marqueeTop.value = buildMarquee(logins)
+    marqueeBottom.value = buildMarquee([...logins].reverse())
+  } catch {
+    stopScramble()
+    marqueeTop.value = buildMarquee([])
+    marqueeBottom.value = buildMarquee([])
+  }
 }
 function randColor() {
   return `hsl(${Math.floor(rand(0, 360))} ${Math.floor(rand(62, 92))}% ${Math.floor(rand(52, 70))}%)`
@@ -160,7 +214,7 @@ function remixStyle() {
   for (const s of stickers) s.bg = randColor()
   remixLabel.value = pick(REMIX_WORDS)
   wander()
-  spawnConfetti((wanderPos.x / 100) * window.innerWidth, (wanderPos.y / 100) * window.innerHeight, 40)
+  spawnConfetti((wanderPos.x / 100) * window.innerWidth, (wanderPos.y / 100) * window.innerHeight, 26)
   bumpChaos(6)
 }
 function wander() {
@@ -169,7 +223,7 @@ function wander() {
 }
 
 /* ======================================================================
-   WEATHER — rain / storm / wind / tornado / snow, solo or combined
+   WEATHER — rain / storm / wind / snow, solo or combined
    ====================================================================== */
 interface WeatherPreset {
   label: string
@@ -177,17 +231,15 @@ interface WeatherPreset {
   snow: boolean
   wind: number
   storm: boolean
-  tornado: boolean
 }
 const WEATHER: WeatherPreset[] = [
-  { label: '☀️ clear skies', rain: 0, snow: false, wind: 0, storm: false, tornado: false },
-  { label: '🌧️ rain', rain: 1, snow: false, wind: 0.6, storm: false, tornado: false },
-  { label: '⛈️ thunderstorm', rain: 2, snow: false, wind: 2.4, storm: true, tornado: false },
-  { label: '🌬️ big wind', rain: 0, snow: false, wind: 3.2, storm: false, tornado: false },
-  { label: '🌪️ tornado', rain: 1, snow: false, wind: 3.4, storm: false, tornado: true },
-  { label: '❄️ snowfall', rain: 0, snow: true, wind: 0.4, storm: false, tornado: false },
-  { label: '🌨️ blizzard', rain: 0, snow: true, wind: 3.4, storm: false, tornado: false },
-  { label: '🌪️⛈️ APOCALYPSE', rain: 2, snow: false, wind: 3.8, storm: true, tornado: true },
+  { label: '☀️ clear skies', rain: 0, snow: false, wind: 0, storm: false },
+  { label: '🌧️ rain', rain: 1, snow: false, wind: 0.6, storm: false },
+  { label: '⛈️ thunderstorm', rain: 2, snow: false, wind: 2.4, storm: true },
+  { label: '🌬️ big wind', rain: 0, snow: false, wind: 3.2, storm: false },
+  { label: '❄️ snowfall', rain: 0, snow: true, wind: 0.4, storm: false },
+  { label: '🌨️ blizzard', rain: 0, snow: true, wind: 3.4, storm: false },
+  { label: '⛈️❄️ APOCALYPSE', rain: 2, snow: true, wind: 3.8, storm: true },
 ]
 const weather = reactive<WeatherPreset>({ ...WEATHER[0] })
 let weatherIdx = 0
@@ -205,26 +257,14 @@ interface Flake {
   vy: number
   phase: number
 }
-interface Leaf {
-  ang: number
-  rad: number
-  spin: number
-  size: number
-  char: string
-}
 const raindrops: Drop[] = []
 const snowflakes: Flake[] = []
-const leaves: Leaf[] = []
-const LEAF_CHARS = ['🍂', '🍁', '🌀', '✦', '🗞️', '🍃']
 
 function makeDrop(): Drop {
   return { x: rand(-60, window.innerWidth + 60), y: rand(-window.innerHeight, 0), len: rand(10, 22), vy: rand(9, 16) }
 }
 function makeFlake(): Flake {
   return { x: rand(0, window.innerWidth), y: rand(-window.innerHeight, 0), r: rand(1.5, 4.2), vy: rand(1, 2.8), phase: rand(0, TAU) }
-}
-function makeLeaf(): Leaf {
-  return { ang: rand(0, TAU), rad: rand(24, 170), spin: rand(0.03, 0.07), size: rand(14, 28), char: pick(LEAF_CHARS) }
 }
 function ensureCount<T>(arr: T[], target: number, make: () => T) {
   while (arr.length < target) arr.push(make())
@@ -235,9 +275,8 @@ function applyWeather(idx: number) {
   weatherIdx = idx
   Object.assign(weather, p)
   weather.wind = p.wind * (Math.random() < 0.5 ? -1 : 1)
-  ensureCount(raindrops, p.rain * 150, makeDrop)
-  ensureCount(snowflakes, p.snow ? 170 : 0, makeFlake)
-  ensureCount(leaves, p.tornado ? 30 : 0, makeLeaf)
+  ensureCount(raindrops, p.rain * 120, makeDrop)
+  ensureCount(snowflakes, p.snow ? 130 : 0, makeFlake)
 }
 function nextWeather() {
   let i = weatherIdx
@@ -255,7 +294,6 @@ const cursor = ref<HTMLElement | null>(null)
 
 let raf = 0
 let tick = 0
-let tornadoX = 0.5
 let flash = 0
 let bolt: number[] = []
 const mouse = { x: -9999, y: -9999 }
@@ -294,11 +332,11 @@ const MOODS = ['happy', 'grin', 'surprised', 'wink', 'sleepy', 'angry', 'love', 
 
 function initBuddies(w: number, h: number) {
   buddyList.length = 0
-  const count = Math.max(6, Math.min(14, Math.round((w * h) / 90000)))
+  const count = Math.max(5, Math.min(10, Math.round((w * h) / 120000)))
   for (let i = 0; i < count; i++) {
     const r = rand(28, 56)
     const factors: number[] = []
-    for (let k = 0; k < 10; k++) factors.push(rand(0.8, 1.14)) // lumpy, not round
+    for (let k = 0; k < 9; k++) factors.push(rand(0.8, 1.14)) // lumpy, not round
     buddyList.push({
       x: rand(r, w - r),
       y: rand(r, h - r),
@@ -315,16 +353,16 @@ function initBuddies(w: number, h: number) {
   }
 }
 
-function spawnConfetti(x: number, y: number, n = 26) {
+function spawnConfetti(x: number, y: number, n = 20) {
   for (let i = 0; i < n; i++) {
-    const useEmoji = Math.random() < 0.45
+    const useEmoji = Math.random() < 0.28
     particles.push({
       x,
       y,
       vx: rand(-6, 6),
       vy: rand(-10, -2),
       life: 0,
-      max: rand(50, 90),
+      max: rand(45, 80),
       size: rand(8, 18),
       color: pick(palette),
       rot: rand(0, TAU),
@@ -332,7 +370,7 @@ function spawnConfetti(x: number, y: number, n = 26) {
       emoji: useEmoji ? pick(CONFETTI_EMOJI) : undefined,
     })
   }
-  if (particles.length > 700) particles.splice(0, particles.length - 700)
+  if (particles.length > 300) particles.splice(0, particles.length - 300)
 }
 
 function drawBuddy(ctx: CanvasRenderingContext2D, b: Buddy) {
@@ -652,28 +690,6 @@ function loop() {
     }
   }
 
-  // tornado swirl
-  if (weather.tornado) {
-    tornadoX += weather.wind * 0.0013
-    if (tornadoX > 1.12) tornadoX = -0.12
-    else if (tornadoX < -0.12) tornadoX = 1.12
-    const cx = tornadoX * w
-    const cy = h * 0.52
-    for (const lf of leaves) {
-      lf.ang += lf.spin
-      const x = cx + Math.cos(lf.ang) * lf.rad
-      const y = cy + Math.sin(lf.ang) * lf.rad * 0.42
-      fctx.save()
-      fctx.translate(x, y)
-      fctx.rotate(lf.ang * 2)
-      fctx.font = `${lf.size}px 'Baloo 2', sans-serif`
-      fctx.textAlign = 'center'
-      fctx.textBaseline = 'middle'
-      fctx.fillText(lf.char, 0, 0)
-      fctx.restore()
-    }
-  }
-
   // cursor comet trail
   for (let i = 0; i < trail.length; i++) {
     const t = trail[i]
@@ -749,13 +765,13 @@ function onMove(e: PointerEvent) {
   trackEyes(e.clientX, e.clientY)
   if (cursor.value) cursor.value.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`
   trail.push({ x: e.clientX, y: e.clientY })
-  if (trail.length > 22) trail.shift()
+  if (trail.length > 16) trail.shift()
   moveDrag(e)
 }
 function onDown(e: PointerEvent) {
   const el = e.target as HTMLElement
   if (el.closest('.sticker, .runaway, .wander, .wbtn')) return
-  spawnConfetti(e.clientX, e.clientY, 30)
+  spawnConfetti(e.clientX, e.clientY, 20)
   bumpChaos(3)
   cursor.value?.classList.add('poke')
   window.setTimeout(() => cursor.value?.classList.remove('poke'), 140)
@@ -782,12 +798,15 @@ onMounted(() => {
   window.addEventListener('pointerdown', onDown)
   window.addEventListener('pointerup', endDrag)
   raf = requestAnimationFrame(loop)
-  autoConfetti = window.setInterval(() => spawnConfetti(rand(0, window.innerWidth), rand(-20, 60), 12), 3400)
+  autoConfetti = window.setInterval(() => spawnConfetti(rand(0, window.innerWidth), rand(-20, 60), 8), 3600)
   // weather occasionally rolls itself, because chaos
   autoWeather = window.setInterval(() => {
     if (Math.random() < 0.4) nextWeather()
   }, 11000)
   wanderTimer = window.setInterval(wander, 1500)
+  // fetch followers for the marquees (gibberish until it lands)
+  startScramble()
+  loadFollowers()
 })
 
 onBeforeUnmount(() => {
@@ -795,6 +814,7 @@ onBeforeUnmount(() => {
   window.clearInterval(autoConfetti)
   window.clearInterval(autoWeather)
   window.clearInterval(wanderTimer)
+  stopScramble()
   window.removeEventListener('resize', resize)
   window.removeEventListener('pointermove', onMove)
   window.removeEventListener('pointerdown', onDown)
@@ -821,8 +841,8 @@ onBeforeUnmount(() => {
   </svg>
 
   <!-- marquees -->
-  <div class="marquee marquee--top"><span>{{ MARQUEE_TOP.repeat(4) }}</span></div>
-  <div class="marquee marquee--bottom"><span>{{ MARQUEE_BOTTOM.repeat(4) }}</span></div>
+  <div class="marquee marquee--top"><span>{{ marqueeTop }}</span><span>{{ marqueeTop }}</span></div>
+  <div class="marquee marquee--bottom"><span>{{ marqueeBottom }}</span><span>{{ marqueeBottom }}</span></div>
 
   <!-- HUD: chaos meter + weather button -->
   <div class="meter">

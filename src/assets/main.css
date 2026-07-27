@@ -73,8 +73,8 @@
 /* ---------- marquees ---------- */
 .marquee {
   position: absolute;
-  left: -10%;
-  width: 120%;
+  left: 0;
+  width: max-content;
   white-space: nowrap;
   font-family: var(--font-shout);
   font-size: clamp(1.6rem, 4vw, 3rem);
