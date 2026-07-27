@@ -116,14 +116,14 @@ const stickerSeed = [
   'you found me 🐛',
 ]
 const stickers = reactive<Sticker[]>(
-  stickerSeed.map((text, i) => ({
+  stickerSeed.map((text) => ({
     text,
-    x: 8 + ((i * 37) % 78),
-    y: 22 + ((i * 53) % 56),
-    rot: (i % 2 ? 1 : -1) * (4 + ((i * 7) % 12)),
-    bg: palette[i % palette.length],
+    x: rand(3, 80),
+    y: rand(12, 82),
+    rot: rand(-14, 14),
+    bg: pick(palette),
     grabbed: false,
-    delay: (i % 6) * 0.6,
+    delay: rand(0, 3.6),
   })),
 )
 
