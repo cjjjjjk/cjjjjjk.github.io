@@ -3,9 +3,10 @@ import { onMounted, onBeforeUnmount, reactive, ref } from 'vue'
 
 /* ======================================================================
    ✦ cjjjjjk's chaos zone ✦
-   a single-file playground. no routes, no structure, just noise.
+   one file. no structure. only vibes, weather, and googly eyes.
    ====================================================================== */
 
+const TAU = Math.PI * 2
 const TITLE = 'cjjjjjk'
 const titleLetters = TITLE.split('')
 
@@ -16,15 +17,27 @@ const SUBS = [
   'drag stuff. click stuff. break nothing.',
   '100% organic pixels',
   'warning: googly eyes ahead',
+  'now with weather!',
 ]
 const subtitle = ref(SUBS[0])
 
 const MARQUEE_TOP =
   '✦ welcome to the chaos ✦ everything wiggles ✦ nothing is aligned ✦ ' +
-  'drag the stickers ✦ chase the button ✦ '
+  'drag the stickers ✦ chase the button ✦ remix the whole vibe ✦ '
 const MARQUEE_BOTTOM =
   '★ made with too much coffee ★ no framework was harmed ★ ' +
-  'click anywhere for confetti ★ vibes only ★ '
+  'click anywhere for confetti ★ summon a storm ★ vibes only ★ '
+
+const palette = ['#ff5ea3', '#b8ff4f', '#4fd2ff', '#ffd23f', '#9b5de5', '#ff6b3d', '#3ddc97']
+function rand(a: number, b: number) {
+  return a + Math.random() * (b - a)
+}
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+function randColor() {
+  return `hsl(${Math.floor(rand(0, 360))} ${Math.floor(rand(62, 92))}% ${Math.floor(rand(52, 70))}%)`
+}
 
 /* ---------- draggable stickers ---------- */
 interface Sticker {
@@ -36,7 +49,6 @@ interface Sticker {
   grabbed: boolean
   delay: number
 }
-const palette = ['#ff5ea3', '#b8ff4f', '#4fd2ff', '#ffd23f', '#9b5de5', '#ff6b3d', '#3ddc97']
 const stickerSeed = [
   'hello!! 👋',
   'wanna drag me?',
@@ -64,11 +76,10 @@ const stickers = reactive<Sticker[]>(
 let dragging: Sticker | null = null
 let dragDX = 0
 let dragDY = 0
-
 function startDrag(s: Sticker, e: PointerEvent) {
   dragging = s
   s.grabbed = true
-  s.rot = (Math.random() * 8 - 4)
+  s.rot = rand(-4, 4)
   dragDX = e.clientX - (s.x / 100) * window.innerWidth
   dragDY = e.clientY - (s.y / 100) * window.innerHeight
   ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
@@ -83,7 +94,7 @@ function endDrag() {
   dragging = null
 }
 
-/* ---------- eyes that track the pointer ---------- */
+/* ---------- eyes in the hero that track the pointer ---------- */
 const leftPupil = ref<HTMLElement | null>(null)
 const rightPupil = ref<HTMLElement | null>(null)
 function trackEyes(mx: number, my: number) {
@@ -98,16 +109,15 @@ function trackEyes(mx: number, my: number) {
   }
 }
 
-/* ---------- runaway button ---------- */
-const btn = ref<HTMLElement | null>(null)
-const btnPos = reactive({ x: 50, y: 72 })
+/* ---------- runaway button (dodges you) ---------- */
+const btnPos = reactive({ x: 50, y: 74 })
 const btnLabel = ref("don't")
-const DONT = ['don\'t', 'nope', 'catch me!', 'too slow', 'hehe', 'missed!', 'not today']
+const DONT = ["don't", 'nope', 'catch me!', 'too slow', 'hehe', 'missed!', 'not today']
 function flee() {
   btnPos.x = 12 + Math.random() * 76
-  btnPos.y = 20 + Math.random() * 62
-  btnLabel.value = DONT[Math.floor(Math.random() * DONT.length)]
-  subtitle.value = SUBS[Math.floor(Math.random() * SUBS.length)]
+  btnPos.y = 20 + Math.random() * 60
+  btnLabel.value = pick(DONT)
+  subtitle.value = pick(SUBS)
 }
 
 /* ---------- chaos meter ---------- */
@@ -115,19 +125,140 @@ const chaos = ref(0)
 const chaosPct = ref(0)
 function bumpChaos(n = 1) {
   chaos.value += n
-  chaosPct.value = Math.min(100, (chaos.value % 100))
+  chaosPct.value = Math.min(100, chaos.value % 100)
 }
 
 /* ======================================================================
-   canvas 1: bouncing buddies (background)
-   canvas 2: fx — cursor comet trail + confetti (foreground)
+   STYLE REMIX — the wandering button that reskins EVERYTHING
    ====================================================================== */
-const buddies = ref<HTMLCanvasElement | null>(null)
+const FILTERS = [
+  '', // back to normal
+  'grayscale(1) contrast(1.15)', // black & white
+  'grayscale(1) invert(1) contrast(1.1)', // inverted b/w
+  'sepia(0.85) contrast(1.05) saturate(1.4) brightness(1.05)', // vintage
+  'saturate(2.6) contrast(1.35) hue-rotate(18deg)', // pop art
+  'invert(1) hue-rotate(180deg)', // photo negative
+  'hue-rotate(120deg) saturate(1.6)', // alien
+  'contrast(2.4) saturate(0) brightness(1.05)', // harsh ink comic
+  'grayscale(1) contrast(3.5) brightness(1.1)', // pencil sketch
+  'blur(0.5px) brightness(1.12) saturate(1.7) hue-rotate(300deg)', // dream
+]
+let appEl: HTMLElement | null = null
+const wanderPos = reactive({ x: 28, y: 42 })
+const remixLabel = ref('🎨 remix everything')
+const REMIX_WORDS = ['🎨 remix!', '🌀 reskin!', '✨ new vibe', '🔮 randomize', '🖼️ restyle', '💥 chaos!']
+
+function remixStyle() {
+  if (appEl) appEl.style.filter = pick(FILTERS)
+  // new base paper color
+  document.documentElement.style.setProperty(
+    '--paper',
+    `hsl(${Math.floor(rand(0, 360))} ${Math.floor(rand(30, 70))}% ${Math.floor(rand(86, 96))}%)`,
+  )
+  // re-roll every buddy + sticker color
+  for (const b of buddyList) b.color = randColor()
+  for (const s of stickers) s.bg = randColor()
+  remixLabel.value = pick(REMIX_WORDS)
+  wander()
+  spawnConfetti((wanderPos.x / 100) * window.innerWidth, (wanderPos.y / 100) * window.innerHeight, 40)
+  bumpChaos(6)
+}
+function wander() {
+  wanderPos.x = 10 + Math.random() * 78
+  wanderPos.y = 22 + Math.random() * 58
+}
+
+/* ======================================================================
+   WEATHER — rain / storm / wind / tornado / snow, solo or combined
+   ====================================================================== */
+interface WeatherPreset {
+  label: string
+  rain: number // 0 none, 1 light, 2 heavy
+  snow: boolean
+  wind: number
+  storm: boolean
+  tornado: boolean
+}
+const WEATHER: WeatherPreset[] = [
+  { label: '☀️ clear skies', rain: 0, snow: false, wind: 0, storm: false, tornado: false },
+  { label: '🌧️ rain', rain: 1, snow: false, wind: 0.6, storm: false, tornado: false },
+  { label: '⛈️ thunderstorm', rain: 2, snow: false, wind: 2.4, storm: true, tornado: false },
+  { label: '🌬️ big wind', rain: 0, snow: false, wind: 3.2, storm: false, tornado: false },
+  { label: '🌪️ tornado', rain: 1, snow: false, wind: 3.4, storm: false, tornado: true },
+  { label: '❄️ snowfall', rain: 0, snow: true, wind: 0.4, storm: false, tornado: false },
+  { label: '🌨️ blizzard', rain: 0, snow: true, wind: 3.4, storm: false, tornado: false },
+  { label: '🌪️⛈️ APOCALYPSE', rain: 2, snow: false, wind: 3.8, storm: true, tornado: true },
+]
+const weather = reactive<WeatherPreset>({ ...WEATHER[0] })
+let weatherIdx = 0
+
+interface Drop {
+  x: number
+  y: number
+  len: number
+  vy: number
+}
+interface Flake {
+  x: number
+  y: number
+  r: number
+  vy: number
+  phase: number
+}
+interface Leaf {
+  ang: number
+  rad: number
+  spin: number
+  size: number
+  char: string
+}
+const raindrops: Drop[] = []
+const snowflakes: Flake[] = []
+const leaves: Leaf[] = []
+const LEAF_CHARS = ['🍂', '🍁', '🌀', '✦', '🗞️', '🍃']
+
+function makeDrop(): Drop {
+  return { x: rand(-60, window.innerWidth + 60), y: rand(-window.innerHeight, 0), len: rand(10, 22), vy: rand(9, 16) }
+}
+function makeFlake(): Flake {
+  return { x: rand(0, window.innerWidth), y: rand(-window.innerHeight, 0), r: rand(1.5, 4.2), vy: rand(1, 2.8), phase: rand(0, TAU) }
+}
+function makeLeaf(): Leaf {
+  return { ang: rand(0, TAU), rad: rand(24, 170), spin: rand(0.03, 0.07), size: rand(14, 28), char: pick(LEAF_CHARS) }
+}
+function ensureCount<T>(arr: T[], target: number, make: () => T) {
+  while (arr.length < target) arr.push(make())
+  if (arr.length > target) arr.length = target
+}
+function applyWeather(idx: number) {
+  const p = WEATHER[idx]
+  weatherIdx = idx
+  Object.assign(weather, p)
+  weather.wind = p.wind * (Math.random() < 0.5 ? -1 : 1)
+  ensureCount(raindrops, p.rain * 150, makeDrop)
+  ensureCount(snowflakes, p.snow ? 170 : 0, makeFlake)
+  ensureCount(leaves, p.tornado ? 30 : 0, makeLeaf)
+}
+function nextWeather() {
+  let i = weatherIdx
+  while (i === weatherIdx) i = Math.floor(Math.random() * WEATHER.length)
+  applyWeather(i)
+  bumpChaos(4)
+}
+
+/* ======================================================================
+   canvas 1: buddies (bg)   canvas 2: fx (cursor trail, confetti, weather)
+   ====================================================================== */
+const buddiesCv = ref<HTMLCanvasElement | null>(null)
 const fx = ref<HTMLCanvasElement | null>(null)
 const cursor = ref<HTMLElement | null>(null)
 
 let raf = 0
-const mouse = { x: -999, y: -999 }
+let tick = 0
+let tornadoX = 0.5
+let flash = 0
+let bolt: number[] = []
+const mouse = { x: -9999, y: -9999 }
 
 interface Buddy {
   x: number
@@ -135,10 +266,9 @@ interface Buddy {
   vx: number
   vy: number
   r: number
-  face: string
   color: string
-  spin: number
-  angle: number
+  factors: number[]
+  phase: number
 }
 interface Particle {
   x: number
@@ -153,33 +283,27 @@ interface Particle {
   vr: number
   emoji?: string
 }
-
 const buddyList: Buddy[] = []
 const particles: Particle[] = []
-const trail: { x: number; y: number; life: number }[] = []
-
-const FACES = ['^‿^', 'o_o', '•ᴥ•', '>‿<', '⊙_⊙', 'ᵔᴥᵔ', '•_•', 'ʘ‿ʘ']
+const trail: { x: number; y: number }[] = []
 const CONFETTI_EMOJI = ['✦', '★', '❤', '✿', '●', '▲', '♦', '🎉', '🍬', '⚡']
-
-function rand(a: number, b: number) {
-  return a + Math.random() * (b - a)
-}
 
 function initBuddies(w: number, h: number) {
   buddyList.length = 0
   const count = Math.max(6, Math.min(14, Math.round((w * h) / 90000)))
   for (let i = 0; i < count; i++) {
-    const r = rand(26, 54)
+    const r = rand(28, 56)
+    const factors: number[] = []
+    for (let k = 0; k < 10; k++) factors.push(rand(0.8, 1.14)) // lumpy, not round
     buddyList.push({
       x: rand(r, w - r),
       y: rand(r, h - r),
       vx: rand(-1.6, 1.6) || 1,
       vy: rand(-1.6, 1.6) || 1,
       r,
-      face: FACES[i % FACES.length],
       color: palette[i % palette.length],
-      spin: rand(-0.02, 0.02),
-      angle: rand(0, Math.PI * 2),
+      factors,
+      phase: rand(0, TAU),
     })
   }
 }
@@ -195,55 +319,108 @@ function spawnConfetti(x: number, y: number, n = 26) {
       life: 0,
       max: rand(50, 90),
       size: rand(8, 18),
-      color: palette[Math.floor(Math.random() * palette.length)],
-      rot: rand(0, Math.PI * 2),
+      color: pick(palette),
+      rot: rand(0, TAU),
       vr: rand(-0.3, 0.3),
-      emoji: useEmoji ? CONFETTI_EMOJI[Math.floor(Math.random() * CONFETTI_EMOJI.length)] : undefined,
+      emoji: useEmoji ? pick(CONFETTI_EMOJI) : undefined,
     })
   }
-  if (particles.length > 600) particles.splice(0, particles.length - 600)
+  if (particles.length > 700) particles.splice(0, particles.length - 700)
 }
 
 function drawBuddy(ctx: CanvasRenderingContext2D, b: Buddy) {
   ctx.save()
   ctx.translate(b.x, b.y)
-  ctx.rotate(Math.sin(b.angle) * 0.15)
-  // body
+
+  // lumpy body via a smooth closed curve through wobbling points
+  const n = b.factors.length
+  const pts: [number, number][] = []
+  for (let i = 0; i < n; i++) {
+    const ang = (i / n) * TAU
+    const rr = b.r * (b.factors[i] + 0.05 * Math.sin(tick * 0.05 + b.phase + i))
+    pts.push([Math.cos(ang) * rr, Math.sin(ang) * rr])
+  }
   ctx.beginPath()
-  ctx.arc(0, 0, b.r, 0, Math.PI * 2)
+  ctx.moveTo((pts[n - 1][0] + pts[0][0]) / 2, (pts[n - 1][1] + pts[0][1]) / 2)
+  for (let i = 0; i < n; i++) {
+    const cur = pts[i]
+    const nxt = pts[(i + 1) % n]
+    ctx.quadraticCurveTo(cur[0], cur[1], (cur[0] + nxt[0]) / 2, (cur[1] + nxt[1]) / 2)
+  }
+  ctx.closePath()
   ctx.fillStyle = b.color
   ctx.fill()
   ctx.lineWidth = 4
   ctx.strokeStyle = '#171123'
   ctx.stroke()
-  // cheeks
-  ctx.fillStyle = 'rgba(255,255,255,0.5)'
+
+  // googly eyes — WHITE fill + black pupil that looks at the cursor
+  const er = b.r * 0.3
+  const ey = -b.r * 0.12
+  for (const ex of [-b.r * 0.34, b.r * 0.34]) {
+    ctx.beginPath()
+    ctx.ellipse(ex, ey, er * 0.9, er, 0, 0, TAU)
+    ctx.fillStyle = '#fff'
+    ctx.fill()
+    ctx.lineWidth = 3.5
+    ctx.strokeStyle = '#171123'
+    ctx.stroke()
+    const gx = b.x + ex
+    const gy = b.y + ey
+    const a = Math.atan2(mouse.y - gy, mouse.x - gx)
+    const md = Math.min(er * 0.42, 6)
+    const px = ex + Math.cos(a) * md
+    const py = ey + Math.sin(a) * md
+    ctx.beginPath()
+    ctx.arc(px, py, er * 0.44, 0, TAU)
+    ctx.fillStyle = '#171123'
+    ctx.fill()
+    ctx.beginPath()
+    ctx.arc(px - er * 0.15, py - er * 0.15, er * 0.12, 0, TAU)
+    ctx.fillStyle = '#fff'
+    ctx.fill()
+  }
+
+  // little smile
   ctx.beginPath()
-  ctx.arc(-b.r * 0.4, b.r * 0.2, b.r * 0.12, 0, Math.PI * 2)
-  ctx.arc(b.r * 0.4, b.r * 0.2, b.r * 0.12, 0, Math.PI * 2)
-  ctx.fill()
-  // face text
-  ctx.fillStyle = '#171123'
-  ctx.font = `${Math.round(b.r * 0.7)}px 'Baloo 2', sans-serif`
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText(b.face, 0, -b.r * 0.02)
+  ctx.lineWidth = 3.5
+  ctx.strokeStyle = '#171123'
+  ctx.lineCap = 'round'
+  ctx.arc(0, b.r * 0.16, b.r * 0.28, 0.15 * Math.PI, 0.85 * Math.PI)
+  ctx.stroke()
+
   ctx.restore()
 }
 
+function makeBolt(w: number, h: number): number[] {
+  const out: number[] = []
+  let x = rand(w * 0.2, w * 0.8)
+  let y = 0
+  const end = rand(h * 0.5, h * 0.92)
+  out.push(x, y)
+  while (y < end) {
+    y += rand(24, 60)
+    x += rand(-42, 42)
+    out.push(x, y)
+  }
+  return out
+}
+
 function loop() {
-  const bc = buddies.value
+  const bc = buddiesCv.value
   const fc = fx.value
   if (!bc || !fc) return
   const bctx = bc.getContext('2d')!
   const fctx = fc.getContext('2d')!
   const w = bc.width
   const h = bc.height
+  tick++
 
-  // --- buddies ---
+  const windNow = weather.wind * (1 + 0.25 * Math.sin(tick * 0.03))
+
+  /* ---- buddies ---- */
   bctx.clearRect(0, 0, w, h)
   for (const b of buddyList) {
-    // gentle attraction/repulsion from the cursor
     const dx = b.x - mouse.x
     const dy = b.y - mouse.y
     const d2 = dx * dx + dy * dy
@@ -252,13 +429,11 @@ function loop() {
       b.vx += dx * f
       b.vy += dy * f
     }
+    b.vx += windNow * 0.02
     b.x += b.vx
     b.y += b.vy
-    b.angle += b.spin + b.vx * 0.004
-    // friction so cursor kicks settle
     b.vx *= 0.995
     b.vy *= 0.995
-    // walls (bouncy)
     if (b.x < b.r) {
       b.x = b.r
       b.vx = Math.abs(b.vx)
@@ -273,44 +448,106 @@ function loop() {
       b.y = h - b.r
       b.vy = -Math.abs(b.vy)
     }
-    // keep a minimum drift so nobody falls asleep
-    const sp = Math.hypot(b.vx, b.vy)
-    if (sp < 0.6) {
+    if (Math.hypot(b.vx, b.vy) < 0.6) {
       b.vx += rand(-0.5, 0.5)
       b.vy += rand(-0.5, 0.5)
     }
     drawBuddy(bctx, b)
   }
 
-  // --- fx: trail + confetti ---
+  /* ---- fx layer ---- */
   fctx.clearRect(0, 0, w, h)
-  // comet trail
-  for (let i = trail.length - 1; i >= 0; i--) {
-    const t = trail[i]
-    t.life += 1
-    const k = 1 - t.life / 22
-    if (k <= 0) {
-      trail.splice(i, 1)
-      continue
+
+  // storm darkens the world
+  if (weather.storm) {
+    fctx.fillStyle = 'rgba(14,10,32,0.34)'
+    fctx.fillRect(0, 0, w, h)
+  }
+
+  // rain
+  if (weather.rain > 0) {
+    fctx.strokeStyle = 'rgba(178,205,255,0.55)'
+    fctx.lineWidth = 2
+    fctx.beginPath()
+    for (const d of raindrops) {
+      d.y += d.vy
+      d.x += windNow * 0.7
+      if (d.y > h) {
+        d.y = -d.len
+        d.x = rand(-60, w + 60)
+      }
+      if (d.x < -80) d.x = w + 60
+      else if (d.x > w + 80) d.x = -60
+      fctx.moveTo(d.x, d.y)
+      fctx.lineTo(d.x - windNow * 2.4, d.y - d.len)
     }
-    fctx.globalAlpha = k
+    fctx.stroke()
+  }
+
+  // snow
+  if (weather.snow) {
+    fctx.fillStyle = 'rgba(255,255,255,0.92)'
+    for (const s of snowflakes) {
+      s.phase += 0.03
+      s.y += s.vy
+      s.x += windNow * 0.45 + Math.sin(s.phase) * 0.6
+      if (s.y > h) {
+        s.y = -6
+        s.x = rand(0, w)
+      }
+      if (s.x < -10) s.x = w + 6
+      else if (s.x > w + 10) s.x = -6
+      fctx.beginPath()
+      fctx.arc(s.x, s.y, s.r, 0, TAU)
+      fctx.fill()
+    }
+  }
+
+  // tornado swirl
+  if (weather.tornado) {
+    tornadoX += weather.wind * 0.0013
+    if (tornadoX > 1.12) tornadoX = -0.12
+    else if (tornadoX < -0.12) tornadoX = 1.12
+    const cx = tornadoX * w
+    const cy = h * 0.52
+    for (const lf of leaves) {
+      lf.ang += lf.spin
+      const x = cx + Math.cos(lf.ang) * lf.rad
+      const y = cy + Math.sin(lf.ang) * lf.rad * 0.42
+      fctx.save()
+      fctx.translate(x, y)
+      fctx.rotate(lf.ang * 2)
+      fctx.font = `${lf.size}px 'Baloo 2', sans-serif`
+      fctx.textAlign = 'center'
+      fctx.textBaseline = 'middle'
+      fctx.fillText(lf.char, 0, 0)
+      fctx.restore()
+    }
+  }
+
+  // cursor comet trail
+  for (let i = 0; i < trail.length; i++) {
+    const t = trail[i]
+    const k = i / trail.length
+    fctx.globalAlpha = k * 0.8
     fctx.fillStyle = palette[i % palette.length]
     fctx.beginPath()
-    fctx.arc(t.x, t.y, 10 * k + 2, 0, Math.PI * 2)
+    fctx.arc(t.x, t.y, 10 * k + 2, 0, TAU)
     fctx.fill()
   }
   fctx.globalAlpha = 1
+
   // confetti
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i]
-    p.life += 1
+    p.life++
     if (p.life > p.max) {
       particles.splice(i, 1)
       continue
     }
-    p.vy += 0.28 // gravity
+    p.vy += 0.28
     p.vx *= 0.99
-    p.x += p.vx
+    p.x += p.vx + windNow * 0.3
     p.y += p.vy
     p.rot += p.vr
     const k = 1 - p.life / p.max
@@ -331,32 +568,51 @@ function loop() {
   }
   fctx.globalAlpha = 1
 
+  // lightning (topmost)
+  if (weather.storm) {
+    if (Math.random() < 0.012) {
+      flash = 1
+      bolt = makeBolt(w, h)
+    }
+    if (flash > 0.04) {
+      fctx.fillStyle = `rgba(255,255,255,${flash * 0.55})`
+      fctx.fillRect(0, 0, w, h)
+      if (flash > 0.35 && bolt.length) {
+        fctx.strokeStyle = '#ffffff'
+        fctx.lineWidth = 3
+        fctx.lineJoin = 'round'
+        fctx.beginPath()
+        fctx.moveTo(bolt[0], bolt[1])
+        for (let i = 2; i < bolt.length; i += 2) fctx.lineTo(bolt[i], bolt[i + 1])
+        fctx.stroke()
+      }
+      flash *= 0.86
+    }
+  }
+
   raf = requestAnimationFrame(loop)
 }
 
-/* ---------- global pointer + resize wiring ---------- */
+/* ---------- global wiring ---------- */
 function onMove(e: PointerEvent) {
   mouse.x = e.clientX
   mouse.y = e.clientY
   trackEyes(e.clientX, e.clientY)
   if (cursor.value) cursor.value.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`
-  trail.push({ x: e.clientX, y: e.clientY, life: 0 })
-  if (trail.length > 24) trail.shift()
+  trail.push({ x: e.clientX, y: e.clientY })
+  if (trail.length > 22) trail.shift()
   moveDrag(e)
 }
-
 function onDown(e: PointerEvent) {
-  // don't fire confetti when grabbing a sticker or poking the button
   const el = e.target as HTMLElement
-  if (el.closest('.sticker') || el.closest('.runaway')) return
+  if (el.closest('.sticker, .runaway, .wander, .wbtn')) return
   spawnConfetti(e.clientX, e.clientY, 30)
   bumpChaos(3)
   cursor.value?.classList.add('poke')
   window.setTimeout(() => cursor.value?.classList.remove('poke'), 140)
 }
-
 function resize() {
-  for (const c of [buddies.value, fx.value]) {
+  for (const c of [buddiesCv.value, fx.value]) {
     if (!c) continue
     c.width = window.innerWidth
     c.height = window.innerHeight
@@ -364,24 +620,32 @@ function resize() {
   initBuddies(window.innerWidth, window.innerHeight)
 }
 
-/* auto-confetti bursts once in a while, because chaos */
-let autoTimer = 0
+let autoConfetti = 0
+let autoWeather = 0
+let wanderTimer = 0
 
 onMounted(() => {
+  appEl = document.getElementById('app')
+  if (appEl) appEl.style.transition = 'filter 0.5s ease'
   resize()
   window.addEventListener('resize', resize)
   window.addEventListener('pointermove', onMove, { passive: true })
   window.addEventListener('pointerdown', onDown)
   window.addEventListener('pointerup', endDrag)
   raf = requestAnimationFrame(loop)
-  autoTimer = window.setInterval(() => {
-    spawnConfetti(rand(0, window.innerWidth), rand(-20, 60), 14)
-  }, 3200)
+  autoConfetti = window.setInterval(() => spawnConfetti(rand(0, window.innerWidth), rand(-20, 60), 12), 3400)
+  // weather occasionally rolls itself, because chaos
+  autoWeather = window.setInterval(() => {
+    if (Math.random() < 0.4) nextWeather()
+  }, 11000)
+  wanderTimer = window.setInterval(wander, 1500)
 })
 
 onBeforeUnmount(() => {
   cancelAnimationFrame(raf)
-  window.clearInterval(autoTimer)
+  window.clearInterval(autoConfetti)
+  window.clearInterval(autoWeather)
+  window.clearInterval(wanderTimer)
   window.removeEventListener('resize', resize)
   window.removeEventListener('pointermove', onMove)
   window.removeEventListener('pointerdown', onDown)
@@ -393,7 +657,7 @@ onBeforeUnmount(() => {
   <div class="stage"></div>
 
   <!-- background buddies -->
-  <canvas ref="buddies" class="buddies"></canvas>
+  <canvas ref="buddiesCv" class="buddies"></canvas>
 
   <!-- floating doodles -->
   <svg class="doodle" style="top: 12%; left: 6%; width: 90px; animation-duration: 14s" viewBox="0 0 100 100">
@@ -411,11 +675,15 @@ onBeforeUnmount(() => {
   <div class="marquee marquee--top"><span>{{ MARQUEE_TOP.repeat(4) }}</span></div>
   <div class="marquee marquee--bottom"><span>{{ MARQUEE_BOTTOM.repeat(4) }}</span></div>
 
-  <!-- chaos meter -->
+  <!-- HUD: chaos meter + weather button -->
   <div class="meter">
     <small>chaos level</small>
     <b>{{ chaos }}</b>
     <div class="bar"><i :style="{ width: chaosPct + '%' }"></i></div>
+  </div>
+  <div class="controls">
+    <button class="wbtn" @click="nextWeather">{{ weather.label }}</button>
+    <small class="controls__hint">↑ tap to change weather</small>
   </div>
 
   <!-- hero -->
@@ -436,35 +704,27 @@ onBeforeUnmount(() => {
     :key="i"
     class="sticker"
     :class="{ grabbed: s.grabbed }"
-    :style="{
-      left: s.x + '%',
-      top: s.y + '%',
-      background: s.bg,
-      transform: `rotate(${s.rot}deg)`,
-      animationDelay: s.delay + 's',
-    }"
+    :style="{ left: s.x + '%', top: s.y + '%', background: s.bg, transform: `rotate(${s.rot}deg)`, animationDelay: s.delay + 's' }"
     @pointerdown="startDrag(s, $event)"
   >
     {{ s.text }}
   </div>
 
-  <!-- runaway button -->
-  <button
-    ref="btn"
-    class="runaway"
-    :style="{ left: btnPos.x + '%', top: btnPos.y + '%' }"
-    @pointerenter="flee"
-    @focus="flee"
-    @click="flee"
-  >
+  <!-- runaway button (dodges) -->
+  <button class="runaway" :style="{ left: btnPos.x + '%', top: btnPos.y + '%' }" @pointerenter="flee" @focus="flee" @click="flee">
     {{ btnLabel }}
   </button>
 
-  <div class="hint">psst — drag the stickers, tap anywhere, and try to press the button 😈</div>
+  <!-- wandering remix button (catchable, reskins everything) -->
+  <button class="wander" :style="{ left: wanderPos.x + '%', top: wanderPos.y + '%' }" @click="remixStyle">
+    {{ remixLabel }}
+  </button>
+
+  <div class="hint">psst — drag stickers · tap anywhere · catch the 🎨 remix · dodge the 🏃 button</div>
 
   <!-- fx overlay -->
   <canvas ref="fx" class="fx"></canvas>
 
   <!-- custom cursor -->
-  <div ref="cursor" class="cursor">✷</div>
+  <div ref="cursor" class="cursor"><i>✷</i></div>
 </template>
