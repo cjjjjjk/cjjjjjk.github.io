@@ -7,7 +7,7 @@ import { onMounted, onBeforeUnmount, reactive, ref } from 'vue'
    ====================================================================== */
 
 const TAU = Math.PI * 2
-const TITLE = 'cjjjjjk'
+const TITLE = 'catncockroach'
 const titleLetters = TITLE.split('')
 
 const SUBS = [
